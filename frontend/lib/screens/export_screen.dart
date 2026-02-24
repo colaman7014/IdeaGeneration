@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import '../providers/idea_provider.dart';
+import '../providers/export_provider.dart';
 import '../theme/app_theme.dart';
 
 class ExportScreen extends StatefulWidget {
@@ -14,30 +15,22 @@ class ExportScreen extends StatefulWidget {
 }
 
 class _ExportScreenState extends State<ExportScreen> {
-  String? _markdownContent;
-  bool _isLoading = true;
   bool _copied = false;
 
   @override
   void initState() {
     super.initState();
-    _loadMarkdown();
+    // 透過 ExportProvider 載入 Markdown
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ideaProvider = context.read<IdeaProvider>();
+      if (ideaProvider.currentIdea != null) {
+        context.read<ExportProvider>().loadMarkdown(ideaProvider.currentIdea!.id);
+      }
+    });
   }
 
-  Future<void> _loadMarkdown() async {
-    final provider = context.read<IdeaProvider>();
-    final content = await provider.exportMarkdown();
-    if (mounted) {
-      setState(() {
-        _markdownContent = content;
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _copyToClipboard() async {
-    if (_markdownContent == null) return;
-    await Clipboard.setData(ClipboardData(text: _markdownContent!));
+  Future<void> _copyToClipboard(String content) async {
+    await Clipboard.setData(ClipboardData(text: content));
     if (!mounted) return;
     setState(() => _copied = true);
     // 2 秒後重置複製狀態
@@ -48,40 +41,46 @@ class _ExportScreenState extends State<ExportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('匯出'),
-        actions: [
-          // 複製按鈕
-          if (_markdownContent != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: TextButton.icon(
-                onPressed: _copied ? null : _copyToClipboard,
-                icon: Icon(
-                  _copied ? Icons.check_circle_outline : Icons.copy_outlined,
-                  size: 18,
-                  color: _copied ? AppTheme.secondary : AppTheme.textSecondary,
-                ),
-                label: Text(
-                  _copied ? '已複製！' : '複製',
-                  style: TextStyle(
-                    color: _copied ? AppTheme.secondary : AppTheme.textSecondary,
-                    fontSize: 14,
+    return Consumer<ExportProvider>(
+      builder: (context, exportProvider, _) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('匯出'),
+            actions: [
+              // 複製按鈕
+              if (exportProvider.markdownContent != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: TextButton.icon(
+                    onPressed: _copied
+                        ? null
+                        : () => _copyToClipboard(exportProvider.markdownContent!),
+                    icon: Icon(
+                      _copied ? Icons.check_circle_outline : Icons.copy_outlined,
+                      size: 18,
+                      color: _copied ? AppTheme.secondary : AppTheme.textSecondary,
+                    ),
+                    label: Text(
+                      _copied ? '已複製！' : '複製',
+                      style: TextStyle(
+                        color: _copied ? AppTheme.secondary : AppTheme.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-        ],
-      ),
-      body: SafeArea(
-        child: _buildBody(),
-      ),
+            ],
+          ),
+          body: SafeArea(
+            child: _buildBody(exportProvider),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildBody() {
-    if (_isLoading) {
+  Widget _buildBody(ExportProvider exportProvider) {
+    if (exportProvider.isLoading) {
       return const Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -100,7 +99,7 @@ class _ExportScreenState extends State<ExportScreen> {
       );
     }
 
-    if (_markdownContent == null) {
+    if (exportProvider.markdownContent == null) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -111,15 +110,17 @@ class _ExportScreenState extends State<ExportScreen> {
               color: AppTheme.textMuted,
             ),
             const SizedBox(height: 16),
-            const Text(
-              '無法產生匯出內容',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 15),
+            Text(
+              exportProvider.errorMessage ?? '無法產生匯出內容',
+              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 15),
             ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
               onPressed: () {
-                setState(() => _isLoading = true);
-                _loadMarkdown();
+                final ideaProvider = context.read<IdeaProvider>();
+                if (ideaProvider.currentIdea != null) {
+                  exportProvider.loadMarkdown(ideaProvider.currentIdea!.id);
+                }
               },
               icon: const Icon(Icons.refresh, size: 18),
               label: const Text('重試'),
@@ -129,6 +130,7 @@ class _ExportScreenState extends State<ExportScreen> {
       );
     }
 
+    final content = exportProvider.markdownContent!;
     return Column(
       children: [
         // 提示列
@@ -137,15 +139,15 @@ class _ExportScreenState extends State<ExportScreen> {
           decoration: const BoxDecoration(
             border: Border(bottom: BorderSide(color: AppTheme.border)),
           ),
-          child: Row(
+          child: const Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.info_outline,
                 size: 14,
                 color: AppTheme.textMuted,
               ),
-              const SizedBox(width: 6),
-              const Expanded(
+              SizedBox(width: 6),
+              Expanded(
                 child: Text(
                   '此格式可直接貼入 Obsidian 或任何 Markdown 編輯器',
                   style: TextStyle(
@@ -160,19 +162,19 @@ class _ExportScreenState extends State<ExportScreen> {
         // Markdown 渲染預覽
         Expanded(
           child: Markdown(
-            data: _markdownContent!,
+            data: content,
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             styleSheet: _buildMarkdownStyleSheet(),
           ),
         ),
         // 底部複製按鈕
-        _buildCopyButton(),
+        _buildCopyButton(content),
       ],
     );
   }
 
-  Widget _buildCopyButton() {
+  Widget _buildCopyButton(String content) {
     return Container(
       decoration: const BoxDecoration(
         color: AppTheme.background,
@@ -180,7 +182,7 @@ class _ExportScreenState extends State<ExportScreen> {
       ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       child: ElevatedButton.icon(
-        onPressed: _copied ? null : _copyToClipboard,
+        onPressed: _copied ? null : () => _copyToClipboard(content),
         icon: Icon(
           _copied ? Icons.check_circle_outline : Icons.copy_outlined,
           size: 18,

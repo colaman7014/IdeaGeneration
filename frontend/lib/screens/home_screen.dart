@@ -2,8 +2,10 @@
 /// 顯示兩則隨機新聞卡片，提供「重新抽取」與「Forge It」功能
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/news_provider.dart';
 import '../providers/idea_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/error_banner.dart';
 import '../widgets/news_card.dart';
 import 'forge_screen.dart';
 
@@ -20,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // 首次進入自動抽取新聞
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<IdeaProvider>().fetchRandomPair();
+      context.read<NewsProvider>().fetchRandomPair();
     });
   }
 
@@ -30,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('IdeaGen'),
         actions: [
-          // 顯示新聞總數徽章（可擴充）
+          // 顯示 3 分鐘標誌
           const Padding(
             padding: EdgeInsets.only(right: 16),
             child: Center(
@@ -47,8 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Consumer<IdeaProvider>(
-        builder: (context, provider, _) {
+      body: Consumer<NewsProvider>(
+        builder: (context, newsProvider, _) {
           return SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -78,16 +80,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 24),
 
                   // 錯誤訊息
-                  if (provider.errorMessage != null)
-                    _ErrorBanner(message: provider.errorMessage!),
+                  if (newsProvider.errorMessage != null)
+                    ErrorBanner(message: newsProvider.errorMessage!),
 
                   // 新聞卡片區
                   Expanded(
-                    child: _buildNewsArea(context, provider),
+                    child: _buildNewsArea(context, newsProvider),
                   ),
 
                   // 底部操作按鈕
-                  _buildBottomActions(context, provider),
+                  _buildBottomActions(context, newsProvider),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -98,9 +100,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNewsArea(BuildContext context, IdeaProvider provider) {
+  Widget _buildNewsArea(BuildContext context, NewsProvider newsProvider) {
     // 載入中
-    if (provider.state == AppState.loadingNews) {
+    if (newsProvider.state == NewsState.loading) {
       return const Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -120,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     // 空白狀態（首次進入前或錯誤後）
-    if (provider.newsPair == null) {
+    if (newsProvider.newsPair == null) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -137,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
-              onPressed: () => provider.fetchRandomPair(),
+              onPressed: () => newsProvider.fetchRandomPair(),
               icon: const Icon(Icons.shuffle, size: 18),
               label: const Text('抽取新聞'),
             ),
@@ -147,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     // 顯示兩則新聞卡片
-    final pair = provider.newsPair!;
+    final pair = newsProvider.newsPair!;
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
@@ -194,9 +196,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBottomActions(BuildContext context, IdeaProvider provider) {
-    final hasNews = provider.newsPair != null;
-    final isLoading = provider.isLoading;
+  Widget _buildBottomActions(BuildContext context, NewsProvider newsProvider) {
+    final hasNews = newsProvider.newsPair != null;
+    final ideaProvider = context.read<IdeaProvider>();
+    final isLoading = newsProvider.isLoading || ideaProvider.isLoading;
 
     return Column(
       children: [
@@ -207,7 +210,9 @@ class _HomeScreenState extends State<HomeScreen> {
             // 重新抽取
             Expanded(
               child: OutlinedButton.icon(
-                onPressed: isLoading ? null : () => provider.fetchRandomPair(),
+                onPressed: isLoading
+                    ? null
+                    : () => newsProvider.fetchRandomPair(),
                 icon: const Icon(Icons.shuffle, size: 18),
                 label: const Text('重新抽取'),
               ),
@@ -218,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
               flex: 2,
               child: ElevatedButton.icon(
                 onPressed: (hasNews && !isLoading)
-                    ? () => _navigateToForge(context, provider)
+                    ? () => _navigateToForge(context, newsProvider)
                     : null,
                 icon: const Icon(Icons.auto_awesome, size: 18),
                 label: const Text('Forge It ⚡'),
@@ -231,48 +236,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _navigateToForge(
-      BuildContext context, IdeaProvider provider) async {
-    await provider.generateIdea();
+      BuildContext context, NewsProvider newsProvider) async {
+    final ideaProvider = context.read<IdeaProvider>();
+    // 將新聞對傳遞給 IdeaProvider，然後生成點子
+    ideaProvider.setNewsPair(newsProvider.newsPair!);
+    await ideaProvider.generateIdea();
     if (!mounted) return;
-    if (provider.currentIdea != null) {
+    if (ideaProvider.currentIdea != null) {
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const ForgeScreen()),
       );
     }
-  }
-}
-
-/// 錯誤橫幅
-class _ErrorBanner extends StatelessWidget {
-  final String message;
-  const _ErrorBanner({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.danger.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.danger.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline, color: AppTheme.danger, size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: const TextStyle(
-                color: AppTheme.danger,
-                fontSize: 13,
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

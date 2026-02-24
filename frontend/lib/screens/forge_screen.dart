@@ -1,8 +1,14 @@
-/// Forge 頁面 - AI 點子展示與魔鬼審計
+/// Forge \u9801\u9762 - AI \u9ede\u5b50\u5c55\u793a\u8207\u9b54\u9b3c\u5be9\u8a08
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/idea_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/error_banner.dart';
+import '../widgets/idea_title_section.dart';
+import '../widgets/idea_content_section.dart';
+import '../widgets/sources_section.dart';
+import '../widgets/devil_audit_section.dart';
+import '../widgets/forge_bottom_actions.dart';
 import 'export_screen.dart';
 
 class ForgeScreen extends StatelessWidget {
@@ -20,12 +26,12 @@ class ForgeScreen extends StatelessWidget {
           },
         ),
         actions: [
-          // 匯出按鈕
+          // \u532f\u51fa\u6309\u9215
           Consumer<IdeaProvider>(
             builder: (context, provider, _) {
               return IconButton(
                 icon: const Icon(Icons.ios_share_outlined),
-                tooltip: '匯出 Markdown',
+                tooltip: '\u532f\u51fa Markdown',
                 onPressed: provider.currentIdea != null
                     ? () => _navigateToExport(context)
                     : null,
@@ -40,7 +46,7 @@ class ForgeScreen extends StatelessWidget {
           if (idea == null) {
             return const Center(
               child: Text(
-                '點子尚未生成',
+                '\u9ede\u5b50\u5c1a\u672a\u751f\u6210',
                 style: TextStyle(color: AppTheme.textSecondary),
               ),
             );
@@ -49,7 +55,7 @@ class ForgeScreen extends StatelessWidget {
           return SafeArea(
             child: Column(
               children: [
-                // 主要內容捲動區
+                // \u4e3b\u8981\u5167\u5bb9\u6372\u52d5\u5340
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
@@ -58,34 +64,34 @@ class ForgeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 16),
-                        // 點子標題
-                        _IdeaTitleSection(title: idea.title),
+                        // \u9ede\u5b50\u6a19\u984c
+                        IdeaTitleSection(title: idea.title),
                         const SizedBox(height: 20),
-                        // 點子內容
-                        _IdeaContentSection(content: idea.content),
+                        // \u9ede\u5b50\u5167\u5bb9
+                        IdeaContentSection(content: idea.content),
                         const SizedBox(height: 24),
-                        // 來源新聞標籤
+                        // \u4f86\u6e90\u65b0\u805e\u6a19\u7c64
                         if (idea.newsSource1 != null || idea.newsSource2 != null)
-                          _SourcesSection(
+                          SourcesSection(
                             source1: idea.newsSource1,
                             source2: idea.newsSource2,
                           ),
                         const SizedBox(height: 24),
-                        // 魔鬼審計結果（若已執行）
+                        // \u9b54\u9b3c\u5be9\u8a08\u7d50\u679c\uff08\u82e5\u5df2\u57f7\u884c\uff09
                         if (idea.devilAudit != null)
-                          _DevilAuditSection(audit: idea.devilAudit!),
-                        // 錯誤訊息
+                          DevilAuditSection(audit: idea.devilAudit!),
+                        // \u932f\u8aa4\u8a0a\u606f
                         if (provider.errorMessage != null) ...[
                           const SizedBox(height: 12),
-                          _ErrorBanner(message: provider.errorMessage!),
+                          ErrorBanner(message: provider.errorMessage!),
                         ],
-                        const SizedBox(height: 100), // 底部 padding
+                        const SizedBox(height: 100), // \u5e95\u90e8 padding
                       ],
                     ),
                   ),
                 ),
-                // 底部操作區
-                _BottomActions(provider: provider),
+                // \u5e95\u90e8\u64cd\u4f5c\u5340
+                ForgeBottomActions(provider: provider),
               ],
             ),
           );
@@ -97,425 +103,6 @@ class ForgeScreen extends StatelessWidget {
   void _navigateToExport(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const ExportScreen()),
-    );
-  }
-}
-
-/// 點子標題區
-class _IdeaTitleSection extends StatelessWidget {
-  final String title;
-  const _IdeaTitleSection({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppTheme.primary.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: const Text(
-            '⚡ AI 生成點子',
-            style: TextStyle(
-              color: AppTheme.primary,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          title,
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            height: 1.25,
-            letterSpacing: -0.8,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// 點子內容區（格式化顯示 6 個章節）
-class _IdeaContentSection extends StatelessWidget {
-  final String content;
-  const _IdeaContentSection({required this.content});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: _parseAndRenderSections(content),
-    );
-  }
-
-  Widget _parseAndRenderSections(String content) {
-    final lines = content.split('\n');
-    final List<Widget> sections = [];
-    String currentSection = '';
-    String currentTitle = '';
-    bool first = true;
-
-    for (final line in lines) {
-      if (line.startsWith('## ') || line.startsWith('# ')) {
-        // 儲存上一個章節
-        if (currentTitle.isNotEmpty && currentSection.trim().isNotEmpty) {
-          sections.add(
-            _SectionTile(
-              title: currentTitle,
-              content: currentSection.trim(),
-              showDivider: !first,
-            ),
-          );
-          first = false;
-        }
-        currentTitle = line.replaceAll(RegExp(r'^#+\s*'), '').trim();
-        currentSection = '';
-      } else if (line.startsWith('**') && line.endsWith('**')) {
-        // 粗體標題行也視為章節
-        if (currentTitle.isNotEmpty && currentSection.trim().isNotEmpty) {
-          sections.add(
-            _SectionTile(
-              title: currentTitle,
-              content: currentSection.trim(),
-              showDivider: !first,
-            ),
-          );
-          first = false;
-        }
-        currentTitle = line.replaceAll(RegExp(r'\*\*'), '').trim();
-        currentSection = '';
-      } else {
-        currentSection += '$line\n';
-      }
-    }
-
-    // 最後一個章節
-    if (currentTitle.isNotEmpty && currentSection.trim().isNotEmpty) {
-      sections.add(
-        _SectionTile(
-          title: currentTitle,
-          content: currentSection.trim(),
-          showDivider: !first,
-        ),
-      );
-    }
-
-    // 若解析失敗（無 ## 標記），直接顯示純文字
-    if (sections.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text(
-          content,
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
-            fontSize: 15,
-            height: 1.6,
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: sections,
-    );
-  }
-}
-
-/// 單一章節磁貼
-class _SectionTile extends StatelessWidget {
-  final String title;
-  final String content;
-  final bool showDivider;
-  const _SectionTile({
-    required this.title,
-    required this.content,
-    this.showDivider = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (showDivider) const Divider(height: 1),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: AppTheme.secondary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                content,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 15,
-                  height: 1.6,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// 來源新聞標籤
-class _SourcesSection extends StatelessWidget {
-  final String? source1;
-  final String? source2;
-  const _SourcesSection({this.source1, this.source2});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '靈感來源',
-          style: TextStyle(
-            color: AppTheme.textMuted,
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.8,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          children: [
-            if (source1 != null) _SourceChip(label: source1!),
-            if (source2 != null) _SourceChip(label: source2!),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _SourceChip extends StatelessWidget {
-  final String label;
-  const _SourceChip({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceElevated,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.link, size: 12, color: AppTheme.textMuted),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 魔鬼審計展示區
-class _DevilAuditSection extends StatelessWidget {
-  final String audit;
-  const _DevilAuditSection({required this.audit});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.danger.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.danger.withOpacity(0.25)),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 標題列
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.danger.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  '🔥 魔鬼審計',
-                  style: TextStyle(
-                    color: AppTheme.danger,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            audit,
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 14,
-              height: 1.7,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 底部操作列
-class _BottomActions extends StatelessWidget {
-  final IdeaProvider provider;
-  const _BottomActions({required this.provider});
-
-  @override
-  Widget build(BuildContext context) {
-    final hasAudit = provider.currentIdea?.devilAudit != null;
-    final isAuditing = provider.state == AppState.auditing;
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.background,
-        border: Border(top: BorderSide(color: AppTheme.border)),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 生成中 Loading 指示器
-          if (provider.state == AppState.generating ||
-              provider.state == AppState.auditing) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    color: AppTheme.primary,
-                    strokeWidth: 2,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  isAuditing ? '魔鬼正在審問...' : 'AI 正在鍛造點子...',
-                  style: const TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-          ],
-          // 按鈕列
-          Row(
-            children: [
-              // Call the Devil（若已有點子且尚未審計）
-              if (!hasAudit)
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: provider.isLoading
-                        ? null
-                        : () => provider.runDevilAudit(),
-                    icon: const Icon(Icons.whatshot_outlined, size: 18),
-                    label: const Text('Call the Devil'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.danger,
-                      side: BorderSide(
-                        color: provider.isLoading
-                            ? AppTheme.border
-                            : AppTheme.danger.withOpacity(0.5),
-                      ),
-                    ),
-                  ),
-                ),
-              if (!hasAudit) const SizedBox(width: 12),
-              // 匯出
-              Expanded(
-                flex: hasAudit ? 2 : 1,
-                child: ElevatedButton.icon(
-                  onPressed: provider.isLoading
-                      ? null
-                      : () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const ExportScreen()),
-                          ),
-                  icon: const Icon(Icons.ios_share_outlined, size: 18),
-                  label: const Text('匯出 Markdown'),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 錯誤橫幅
-class _ErrorBanner extends StatelessWidget {
-  final String message;
-  const _ErrorBanner({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.danger.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.danger.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline, color: AppTheme.danger, size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: const TextStyle(color: AppTheme.danger, fontSize: 13),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

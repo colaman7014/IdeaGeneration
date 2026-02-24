@@ -1,21 +1,28 @@
-"""RSS 抓取服務"""
+"""RSS 抓取服務（非同步包裝版本）"""
+import asyncio
 import feedparser
 from datetime import datetime
 from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from app.models.news import News, Tag
 from app.services.rss_sources import RSS_SOURCES
+from app.core.database import SyncSessionLocal
 
 
 class RSSFetcher:
-    """RSS 抓取器類別"""
-    
+    """RSS 抓取器類別
+
+    feedparser 為同步函式庫，透過 asyncio.to_thread 包裝為非同步操作。
+    DB 操作使用 SyncSessionLocal 以確保與 feedparser 的相容性。
+    """
+
     def __init__(self, db: Session):
         self.db = db
-    
+
     def fetch_all_sources(self) -> dict:
-        """從所有來源抓取 RSS 資料"""
+        """從所有來源抓取 RSS 資料（同步版本）"""
         results = {
             "total_sources": len(RSS_SOURCES),
             "success": 0,
@@ -23,7 +30,7 @@ class RSSFetcher:
             "new_articles": 0,
             "errors": []
         }
-        
+
         for source in RSS_SOURCES:
             try:
                 count = self._fetch_source(source)
@@ -35,30 +42,34 @@ class RSSFetcher:
                     "source": source["name"],
                     "error": str(e)
                 })
-        
+
         return results
-    
+
+    async def fetch_all_sources_async(self) -> dict:
+        """從所有來源抓取 RSS 資料（非同步包裝）"""
+        return await asyncio.to_thread(self.fetch_all_sources)
+
     def _fetch_source(self, source: dict) -> int:
         """從單一來源抓取 RSS 資料"""
         feed = feedparser.parse(source["url"])
-        
+
         if feed.bozo and not feed.entries:
             raise Exception(f"無法解析 RSS: {feed.bozo_exception}")
-        
+
         new_count = 0
-        
+
         for entry in feed.entries:
             # 檢查是否已存在
             existing = self.db.query(News).filter(
                 News.link == entry.get("link", "")
             ).first()
-            
+
             if existing:
                 continue
-            
+
             # 解析發布時間
             published_at = self._parse_published_date(entry)
-            
+
             # 建立新聞記錄
             news = News(
                 title=entry.get("title", "無標題"),
@@ -67,31 +78,31 @@ class RSSFetcher:
                 source=source["name"],
                 published_at=published_at
             )
-            
+
             self.db.add(news)
             new_count += 1
-        
+
         self.db.commit()
         return new_count
-    
+
     def _parse_published_date(self, entry: dict) -> Optional[datetime]:
         """解析 RSS 條目的發布日期"""
         published = entry.get("published_parsed") or entry.get("updated_parsed")
-        
+
         if published:
             try:
                 return datetime(*published[:6])
             except (TypeError, ValueError):
                 pass
-        
+
         return None
-    
+
     def get_recent_news(self, limit: int = 50) -> list[News]:
         """取得最近的新聞列表"""
         return self.db.query(News).order_by(
             News.created_at.desc()
         ).limit(limit).all()
-    
+
     def get_news_without_tags(self, limit: int = 20) -> list[News]:
         """取得尚未標籤的新聞"""
         return self.db.query(News).filter(
@@ -101,6 +112,7 @@ class RSSFetcher:
         ).limit(limit).all()
 
 
-def create_rss_fetcher(db: Session) -> RSSFetcher:
-    """建立 RSS 抓取器實例"""
+def create_rss_fetcher() -> RSSFetcher:
+    """建立 RSS 抓取器實例（使用 SyncSessionLocal）"""
+    db = SyncSessionLocal()
     return RSSFetcher(db)

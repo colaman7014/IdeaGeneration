@@ -22,6 +22,12 @@ class IdeaProvider extends ChangeNotifier {
       _state == AppState.generating ||
       _state == AppState.auditing;
 
+  /// 從外部設定新聞對（由 NewsProvider 傳入）
+  void setNewsPair(NewsPair pair) {
+    _newsPair = pair;
+    notifyListeners();
+  }
+
   /// 重新抽取隨機新聞對
   Future<void> fetchRandomPair() async {
     _setState(AppState.loadingNews);
@@ -62,16 +68,8 @@ class IdeaProvider extends ChangeNotifier {
     _clearError();
     try {
       final auditResult = await _api.devilAudit(_currentIdea!.id);
-      // 用新的審計結果更新點子
-      _currentIdea = IdeaItem(
-        id: _currentIdea!.id,
-        title: _currentIdea!.title,
-        content: _currentIdea!.content,
-        newsSource1: _currentIdea!.newsSource1,
-        newsSource2: _currentIdea!.newsSource2,
-        devilAudit: auditResult,
-        createdAt: _currentIdea!.createdAt,
-      );
+      // 用 copyWith 更新審計結果
+      _currentIdea = _currentIdea!.copyWith(devilAudit: auditResult);
       _setState(AppState.done);
     } on ApiException catch (e) {
       _setError('魔鬼審計失敗：${e.message}');

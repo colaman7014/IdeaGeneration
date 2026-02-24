@@ -1,10 +1,13 @@
 """FastAPI 應用程式主入口"""
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
 from app.core.database import engine, Base
+from app.core.exceptions import AppException
 from app.services.scheduler import start_scheduler, stop_scheduler
 from app.routers import ideas, news
 
@@ -31,6 +34,16 @@ app = FastAPI(
     debug=settings.debug,
     lifespan=lifespan
 )
+
+
+@app.exception_handler(AppException)
+async def app_exception_handler(request: Request, exc: AppException):
+    """全域應用例外處理"""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail}
+    )
+
 
 # 設定 CORS
 app.add_middleware(
