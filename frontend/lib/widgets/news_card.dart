@@ -13,16 +13,16 @@ class NewsCard extends StatelessWidget {
     super.key,
     required this.news,
     required this.label,
-    this.labelColor = AppTheme.secondary,
+    this.labelColor = AppTheme.secondaryLight
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: AppTheme.surfaceLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: AppTheme.borderLight),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -36,7 +36,7 @@ class NewsCard extends StatelessWidget {
                 child: Text(
                   news.source,
                   style: const TextStyle(
-                    color: AppTheme.textMuted,
+                    color: AppTheme.textMutedLight,
                     fontSize: 11,
                     letterSpacing: 0.5,
                     fontWeight: FontWeight.w500,
@@ -70,7 +70,7 @@ class NewsCard extends StatelessWidget {
           Text(
             news.title,
             style: const TextStyle(
-              color: AppTheme.textPrimary,
+              color: AppTheme.textPrimaryLight,
               fontSize: 15,
               fontWeight: FontWeight.w600,
               height: 1.4,
@@ -85,7 +85,7 @@ class NewsCard extends StatelessWidget {
             Text(
               news.summary!,
               style: const TextStyle(
-                color: AppTheme.textSecondary,
+                color: AppTheme.textSecondaryLight,
                 fontSize: 13,
                 height: 1.5,
               ),
@@ -118,13 +118,13 @@ class _TagChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceElevated,
+        color: AppTheme.surfaceMutedLight,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         tag.name,
         style: const TextStyle(
-          color: AppTheme.textMuted,
+          color: AppTheme.textMutedLight,
           fontSize: 11,
           letterSpacing: 0.3,
         ),

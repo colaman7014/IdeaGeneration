@@ -15,8 +15,8 @@ class ForgeBottomActions extends StatelessWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: AppTheme.background,
-        border: Border(top: BorderSide(color: AppTheme.border)),
+        color: AppTheme.backgroundLight,
+        border: Border(top: BorderSide(color: AppTheme.borderLight)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       child: Column(
@@ -32,7 +32,7 @@ class ForgeBottomActions extends StatelessWidget {
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
-                    color: AppTheme.primary,
+                    color: AppTheme.primaryLight,
                     strokeWidth: 2,
                   ),
                 ),
@@ -40,7 +40,7 @@ class ForgeBottomActions extends StatelessWidget {
                 Text(
                   isAuditing ? '魔鬼正在審問...' : 'AI 正在鍛造點子...',
                   style: const TextStyle(
-                    color: AppTheme.textSecondary,
+                    color: AppTheme.textSecondaryLight,
                     fontSize: 13,
                   ),
                 ),
@@ -61,11 +61,11 @@ class ForgeBottomActions extends StatelessWidget {
                     icon: const Icon(Icons.whatshot_outlined, size: 18),
                     label: const Text('Call the Devil'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.danger,
+                      foregroundColor: AppTheme.dangerLight,
                       side: BorderSide(
                         color: provider.isLoading
-                            ? AppTheme.border
-                            : AppTheme.danger.withOpacity(0.5),
+                            ? AppTheme.borderLight
+                            : AppTheme.dangerLight.withOpacity(0.5),
                       ),
                     ),
                   ),

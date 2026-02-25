@@ -14,13 +14,13 @@ class IdeaTitleSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: AppTheme.primary.withOpacity(0.15),
+            color: AppTheme.primaryLight.withOpacity(0.15),
             borderRadius: BorderRadius.circular(6),
           ),
           child: const Text(
             '\u26a1 AI \u751f\u6210\u9ede\u5b50',
             style: TextStyle(
-              color: AppTheme.primary,
+              color: AppTheme.primaryLight,
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.8,
@@ -31,7 +31,7 @@ class IdeaTitleSection extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-            color: AppTheme.textPrimary,
+            color: AppTheme.textPrimaryLight,
             fontSize: 24,
             fontWeight: FontWeight.w700,
             height: 1.25,

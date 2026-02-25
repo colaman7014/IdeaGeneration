@@ -10,9 +10,9 @@ class IdeaContentSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: AppTheme.surfaceLight,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: AppTheme.borderLight),
       ),
       child: _parseAndRenderSections(content),
     );
@@ -77,7 +77,7 @@ class IdeaContentSection extends StatelessWidget {
         child: Text(
           content,
           style: const TextStyle(
-            color: AppTheme.textPrimary,
+            color: AppTheme.textPrimaryLight,
             fontSize: 15,
             height: 1.6,
           ),
@@ -117,7 +117,7 @@ class _SectionTile extends StatelessWidget {
               Text(
                 title,
                 style: const TextStyle(
-                  color: AppTheme.secondary,
+                  color: AppTheme.secondaryLight,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.0,
@@ -127,7 +127,7 @@ class _SectionTile extends StatelessWidget {
               Text(
                 content,
                 style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: AppTheme.textPrimaryLight,
                   fontSize: 15,
                   height: 1.6,
                 ),

@@ -18,19 +18,19 @@ class ErrorBanner extends StatelessWidget {
       margin: margin ?? const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppTheme.danger.withOpacity(0.1),
+        color: AppTheme.dangerLight.withOpacity(0.1)
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppTheme.danger.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.dangerLight.withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppTheme.danger, size: 16),
+          const Icon(Icons.error_outline, color: AppTheme.dangerLight, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
               style: const TextStyle(
-                color: AppTheme.danger,
+                color: AppTheme.dangerLight,
                 fontSize: 13,
                 height: 1.4,
               ),

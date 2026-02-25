@@ -35,11 +35,11 @@ class _HomeScreenState extends State<HomeScreen> {
           // 顯示 3 分鐘標誌
           const Padding(
             padding: EdgeInsets.only(right: 16),
-            child: Center(
+                child: Center(
               child: Text(
                 '3 MIN',
                 style: TextStyle(
-                  color: AppTheme.primary,
+                  color: AppTheme.primaryLight
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.2,
@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Text(
                     '今天有什麼\n商機在等你？',
                     style: TextStyle(
-                      color: AppTheme.textPrimary,
+                      color: AppTheme.textPrimaryLight,
                       fontSize: 28,
                       fontWeight: FontWeight.w700,
                       height: 1.2,
@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Text(
                     '從兩則新聞中，讓 AI 為你挖掘商業洞察',
                     style: TextStyle(
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.textSecondaryLight,
                       fontSize: 14,
                     ),
                   ),
@@ -108,13 +108,13 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(
-              color: AppTheme.primary,
+              color: AppTheme.primaryLight,
               strokeWidth: 2,
             ),
             SizedBox(height: 16),
             Text(
               '正在抽取新聞...',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+              style: TextStyle(color: AppTheme.textSecondaryLight, fontSize: 14),
             ),
           ],
         ),
@@ -130,12 +130,12 @@ class _HomeScreenState extends State<HomeScreen> {
             const Icon(
               Icons.newspaper_outlined,
               size: 48,
-              color: AppTheme.textMuted,
+              color: AppTheme.textMutedLight,
             ),
             const SizedBox(height: 16),
             const Text(
               '點擊「重新抽取」開始',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 15),
+              style: TextStyle(color: AppTheme.textSecondaryLight, fontSize: 15),
             ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
@@ -157,38 +157,38 @@ class _HomeScreenState extends State<HomeScreen> {
           NewsCard(
             news: pair.newsA,
             label: 'A',
-            labelColor: AppTheme.secondary,
+            labelColor: AppTheme.secondaryLight,
           ),
           const SizedBox(height: 12),
           // 交叉連結符號
           Row(
             children: [
-              Expanded(child: Divider(color: AppTheme.border)),
+              Expanded(child: Divider(color: AppTheme.borderLight)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Container(
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceElevated,
+                    color: AppTheme.surfaceMutedLight,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.border),
+                    border: Border.all(color: AppTheme.borderLight),
                   ),
                   child: const Icon(
                     Icons.add,
                     size: 16,
-                    color: AppTheme.textMuted,
+                    color: AppTheme.textMutedLight,
                   ),
                 ),
               ),
-              Expanded(child: Divider(color: AppTheme.border)),
+              Expanded(child: Divider(color: AppTheme.borderLight)),
             ],
           ),
           const SizedBox(height: 12),
           NewsCard(
             news: pair.newsB,
             label: 'B',
-            labelColor: AppTheme.primary,
+            labelColor: AppTheme.primaryLight,
           ),
           const SizedBox(height: 8),
         ],

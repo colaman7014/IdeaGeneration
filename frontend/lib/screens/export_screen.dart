@@ -58,12 +58,12 @@ class _ExportScreenState extends State<ExportScreen> {
                     icon: Icon(
                       _copied ? Icons.check_circle_outline : Icons.copy_outlined,
                       size: 18,
-                      color: _copied ? AppTheme.secondary : AppTheme.textSecondary,
+                      color: _copied ? AppTheme.secondaryLight : AppTheme.textSecondaryLight
                     ),
                     label: Text(
                       _copied ? '已複製！' : '複製',
                       style: TextStyle(
-                        color: _copied ? AppTheme.secondary : AppTheme.textSecondary,
+                        color: _copied ? AppTheme.secondaryLight : AppTheme.textSecondaryLight,
                         fontSize: 14,
                       ),
                     ),
@@ -81,18 +81,18 @@ class _ExportScreenState extends State<ExportScreen> {
 
   Widget _buildBody(ExportProvider exportProvider) {
     if (exportProvider.isLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(
-              color: AppTheme.primary,
+              color: AppTheme.primaryLight,
               strokeWidth: 2,
             ),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
               '正在產生 Markdown...',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+              style: TextStyle(color: AppTheme.textSecondaryLight, fontSize: 14),
             ),
           ],
         ),
@@ -107,12 +107,12 @@ class _ExportScreenState extends State<ExportScreen> {
             const Icon(
               Icons.error_outline,
               size: 48,
-              color: AppTheme.textMuted,
+              color: AppTheme.textMutedLight,
             ),
             const SizedBox(height: 16),
             Text(
               exportProvider.errorMessage ?? '無法產生匯出內容',
-              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 15),
+              style: const TextStyle(color: AppTheme.textSecondaryLight, fontSize: 15),
             ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
@@ -137,21 +137,21 @@ class _ExportScreenState extends State<ExportScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: AppTheme.border)),
+            border: Border(bottom: BorderSide(color: AppTheme.borderLight)),
           ),
           child: const Row(
             children: [
               Icon(
                 Icons.info_outline,
                 size: 14,
-                color: AppTheme.textMuted,
+                color: AppTheme.textMutedLight,
               ),
               SizedBox(width: 6),
               Expanded(
                 child: Text(
                   '此格式可直接貼入 Obsidian 或任何 Markdown 編輯器',
                   style: TextStyle(
-                    color: AppTheme.textMuted,
+                    color: AppTheme.textMutedLight,
                     fontSize: 12,
                   ),
                 ),
@@ -177,8 +177,8 @@ class _ExportScreenState extends State<ExportScreen> {
   Widget _buildCopyButton(String content) {
     return Container(
       decoration: const BoxDecoration(
-        color: AppTheme.background,
-        border: Border(top: BorderSide(color: AppTheme.border)),
+        color: AppTheme.backgroundLight,
+        border: Border(top: BorderSide(color: AppTheme.borderLight)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       child: ElevatedButton.icon(
@@ -190,7 +190,7 @@ class _ExportScreenState extends State<ExportScreen> {
         label: Text(_copied ? '已複製到剪貼板 ✓' : '複製 Markdown'),
         style: _copied
             ? ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.secondary,
+                backgroundColor: AppTheme.secondaryLight,
                 foregroundColor: Colors.white,
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
@@ -205,53 +205,53 @@ class _ExportScreenState extends State<ExportScreen> {
   MarkdownStyleSheet _buildMarkdownStyleSheet() {
     return MarkdownStyleSheet(
       h1: const TextStyle(
-        color: AppTheme.textPrimary,
+        color: AppTheme.textPrimaryLight,
         fontSize: 22,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.5,
         height: 1.3,
       ),
       h2: const TextStyle(
-        color: AppTheme.secondary,
+        color: AppTheme.secondaryLight,
         fontSize: 14,
         fontWeight: FontWeight.w700,
         letterSpacing: 0.8,
       ),
       h3: const TextStyle(
-        color: AppTheme.textPrimary,
+        color: AppTheme.textPrimaryLight,
         fontSize: 16,
         fontWeight: FontWeight.w600,
       ),
       p: const TextStyle(
-        color: AppTheme.textPrimary,
+        color: AppTheme.textPrimaryLight,
         fontSize: 15,
         height: 1.6,
       ),
       listBullet: const TextStyle(
-        color: AppTheme.secondary,
+        color: AppTheme.secondaryLight,
         fontSize: 15,
       ),
       blockquoteDecoration: BoxDecoration(
-        color: AppTheme.surfaceElevated,
+        color: AppTheme.surfaceMutedLight,
         border: const Border(
-          left: BorderSide(color: AppTheme.secondary, width: 3),
+          left: BorderSide(color: AppTheme.secondaryLight, width: 3),
         ),
       ),
       blockquotePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       code: const TextStyle(
-        color: AppTheme.secondary,
+        color: AppTheme.secondaryLight,
         fontSize: 13,
-        backgroundColor: Color(0xFF1E2A1E),
+        backgroundColor: Color(0xFFF5F3F0),
         fontFamily: 'monospace',
       ),
       codeblockDecoration: BoxDecoration(
-        color: AppTheme.surfaceElevated,
+        color: AppTheme.surfaceMutedLight,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: AppTheme.borderLight),
       ),
       horizontalRuleDecoration: const BoxDecoration(
         border: Border(
-          top: BorderSide(color: AppTheme.border),
+          top: BorderSide(color: AppTheme.borderLight),
         ),
       ),
     );

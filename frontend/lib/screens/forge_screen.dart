@@ -47,7 +47,7 @@ class ForgeScreen extends StatelessWidget {
             return const Center(
               child: Text(
                 '\u9ede\u5b50\u5c1a\u672a\u751f\u6210',
-                style: TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.textSecondaryLight)
               ),
             );
           }

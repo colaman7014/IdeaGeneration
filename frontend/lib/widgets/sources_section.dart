@@ -15,7 +15,7 @@ class SourcesSection extends StatelessWidget {
         const Text(
           '\u9748\u611f\u4f86\u6e90',
           style: TextStyle(
-            color: AppTheme.textMuted,
+            color: AppTheme.textMutedLight,
             fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.8,
@@ -44,19 +44,19 @@ class _SourceChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceElevated,
+        color: AppTheme.surfaceMutedLight,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: AppTheme.borderLight),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.link, size: 12, color: AppTheme.textMuted),
+          const Icon(Icons.link, size: 12, color: AppTheme.textMutedLight),
           const SizedBox(width: 5),
           Text(
             label,
             style: const TextStyle(
-              color: AppTheme.textSecondary,
+              color: AppTheme.textSecondaryLight,
               fontSize: 12,
             ),
           ),

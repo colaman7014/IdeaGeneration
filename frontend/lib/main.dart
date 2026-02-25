@@ -25,7 +25,7 @@ class IdeaGenerationApp extends StatelessWidget {
       child: MaterialApp(
         title: 'IdeaGen',
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.dark,
+        theme: AppTheme.light,
         home: const HomeScreen(),
       ),
     );
